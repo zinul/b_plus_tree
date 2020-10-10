@@ -9,13 +9,16 @@ def random_name(size):
 
 def random_ip():
     int_ip = random.randint(1, 2**32)
+    temp=int_ip
     address = ''
     for _ in range(4):
-        ip = int_ip % (2**8)
-        int_ip >>= 8
+        ip = temp % (2**8)
+        temp >>= 8
         address = address+str(ip)+'.'
-    return address[0:-1]
+    return [address[0:-1],int_ip]
 
 for i in range(int(sys.argv[1])):
-    print(random_ip(), end='\t')
-    print(random_name(random.randint(3,10))+".com")
+    print(random_ip()[0], end='\t')
+    print(random_name(random.randint(4,10))+".com",end='\t')
+    print(random_ip()[1])
+    
