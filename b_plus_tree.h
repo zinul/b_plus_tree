@@ -1,20 +1,17 @@
 #include <sys/types.h>
+#include <stdbool.h>
 
 #define MAX_CACHE_NUM 5
-#define MIN_CACHE_NUM MAX_CACHE_NUM/2 
+#define MIN_CACHE_NUM 3
 
-typedef int index_t;
+struct b_plus_tree b_plus_tree;
+
+typedef unsigned int index_t;
 typedef struct Value
 {
     char domain[16];
 } Value;
 
-typedef struct Key
-{
-    Node *l_node;
-    Node *r_node;
-    index_t index;
-} Key;
 typedef struct Node
 {
     Node *parent_ptr;
@@ -22,17 +19,24 @@ typedef struct Node
     bool leaf;
     // I need to alloc a MIN_CACHE_NUM*sizeof(Key) bytes memory when a node is created
     // then when a new child join in, I will alloc the MAX_CACHE_NUM*sizeof(Key) bytes mem
-    Key *keys;
-    int key_num;
+    // Key *keys;
+    index_t keys[MAX_CACHE_NUM];
 
     // leaf node
     Node *pre_node;
     Node *next_node;
-    Value values;
+    Value values[MAX_CACHE_NUM];
     off_t disk_pos;
 
     // internal node
-    Node *child_node_ptr[MIN_CACHE_NUM];
+    Node *child_node_ptr[MAX_CACHE_NUM];
+    int child_num;    
 } Node;
-
-Node *InsertNode(Key key,Value value)
+struct b_plus_tree
+{
+    Node *root_node;
+    long long leaf_nums;
+};
+extern Node *SplitSplitLeafNode(Node *work_node);
+extern Node *SplitInternalNode(Node *work_node);
+// extern Node *InsertNode(index_t key,Value value);
