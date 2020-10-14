@@ -22,16 +22,16 @@ int main()
     b_plus_tree = BPTreeCreate();
     b_plus_tree.leaf_nums = 0;
     printf("creat finish\n");
-    for (unsigned int i = 1; i < 20; ++i)
+    for (unsigned int i = 1; i < 2000000; ++i)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
         Value value;
         strcpy(value.domain, domain_buf);
         Insert(&b_plus_tree, ip, value);
         // printf("%s\t%u\n", domain_buf, ip);
-        printf("nums:%lld\n", b_plus_tree.leaf_nums);
-        PrintAllLeafNode();
-    PrintLastInternalNode();
+        // printf("nums:%lld\n", b_plus_tree.leaf_nums);
+    //     PrintAllLeafNode();
+    // PrintLastInternalNode();
     }
     return 0;
 }
