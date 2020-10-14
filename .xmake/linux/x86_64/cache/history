@@ -1,0 +1,15 @@
+{
+    __version = "2.3.7",
+    cmdlines = {
+        "xmake lua /home/zmz/.local/share/xmake/actions/build/cleaner.lua",
+        "xmake ",
+        "xmake ",
+        "xmake ",
+        "xmake ",
+        "xmake ",
+        "xmake ",
+        "xmake ",
+        "xmake ",
+        "xmake run main"
+    }
+}

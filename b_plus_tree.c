@@ -1,17 +1,51 @@
 #include "b_plus_tree.h"
 extern struct b_plus_tree b_plus_tree;
 
-Node *SplitLeafNode(Node *work_node)
+void SplitInternalNode(Node *work_node)
+{
+    Node *new_internal_node = AllocNode(false);
+    index_t min_key_in_new_node;
+    for (int i = 0; i < MIN_CACHE_NUM-1 ; i++)
+    {
+        new_internal_node->keys[i] = work_node->keys[work_node->child_num-i];
+        new_internal_node->child_node_ptr[i] = work_node->child_node_ptr[work_node->child_num-i];
+        new_internal_node->child_node_ptr[i]->parent_ptr=new_internal_node;
+    }    
+    min_key_in_new_node = new_internal_node->keys[0];
+    work_node->child_num=MIN_CACHE_NUM;
+    new_internal_node->child_num=MIN_CACHE_NUM-1;
+
+    new_internal_node->next_node = work_node->next_node;
+    work_node->next_node = new_internal_node;
+
+    if (work_node->parent_ptr->child_num == 2 * MIN_CACHE_NUM - 1)
+    {
+        // new_parent_node = AllocNode(false);
+        SplitInternalNode(work_node->parent_ptr);
+        // 记得把新节点所有子结点的父节点修改为新的
+        if(min_key_in_new_node>work_node->parent_ptr->keys[work_node->parent_ptr->child_num-1])
+        {
+            new_internal_node->parent_ptr=work_node->parent_ptr->next_node;
+        }
+        else
+        {
+            new_internal_node->parent_ptr=work_node->parent_ptr;
+        }
+    }
+    InsertInternalNode(new_internal_node->parent_ptr, min_key_in_new_node, new_internal_node);
+}
+
+void SplitLeafNode(Node *work_node)
 {
     Node *new_leaf_node = AllocNode(true);
     Node *new_parent_node;
-    index_t min_key_in_new_leaf;
+    index_t min_key_in_new_node;
     for (int i = 0; i < MIN_CACHE_NUM-1 ; i++)
     {
         new_leaf_node->keys[i] = work_node->keys[work_node->child_num-i];
         new_leaf_node->values[i] = work_node->values[work_node->child_num-i];
     }
-    min_key_in_new_leaf = new_leaf_node->keys[0];
+    min_key_in_new_node = new_leaf_node->keys[0];
     work_node->child_num = MIN_CACHE_NUM;
     new_leaf_node->child_num = MIN_CACHE_NUM - 1;
 
@@ -23,7 +57,7 @@ Node *SplitLeafNode(Node *work_node)
         // new_parent_node = AllocNode(false);
         SplitInternalNode(work_node->parent_ptr);
         // 记得把新节点所有子结点的父节点修改为新的
-        if(min_key_in_new_leaf>work_node->parent_ptr->keys[work_node->parent_ptr->child_num-1])
+        if(min_key_in_new_node>work_node->parent_ptr->keys[work_node->parent_ptr->child_num-1])
         {
             new_leaf_node->parent_ptr=work_node->parent_ptr->next_node;
         }
@@ -32,24 +66,7 @@ Node *SplitLeafNode(Node *work_node)
             new_leaf_node->parent_ptr=work_node->parent_ptr;
         }
     }
-    InsertInternalNode(new_leaf_node->parent_ptr, min_key_in_new_leaf, new_leaf_node);
-
-    // for(int i=work_node->parent_ptr->child_num-1;i>=0;i--)
-    // {
-    //     if(min_key_in_new_leaf>work_node->parent_ptr->keys[i])
-    //     {
-    //         work_node->parent_ptr->keys[i+1]=work_node->parent_ptr->keys[i];
-    //         continue;
-    //     }
-    //     else
-    //     {
-    //         work_node->parent_ptr->keys[i+1]=min_key_in_new_leaf;
-    //         work_node->parent_ptr->child_node_ptr[i+1]=new_leaf_node;
-    //         work_node->parent_ptr->child_num++;
-    //         return new_leaf_node;
-    //     }
-
-    // }
+    InsertInternalNode(new_leaf_node->parent_ptr, min_key_in_new_node, new_leaf_node);
 }
 
 void Insert(Node *work_node, index_t key, Value value)
@@ -72,6 +89,7 @@ void Insert(Node *work_node, index_t key, Value value)
             }
         }
         InsertLeafNode(work_node, key, value);
+        b_plus_tree.leaf_nums++;
     }
     else
     {
@@ -131,7 +149,7 @@ void InsertInternalNode(Node *work_node, index_t key, Node *new_node)
         }
     }
 }
-struct b_plus_tree BPTreeCreate(index_t key, Value value)
+struct b_plus_tree BPTreeCreate()
 {
     struct b_plus_tree b_plus_tree;
     Node *root_node = AllocNode(true);

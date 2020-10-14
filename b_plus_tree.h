@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #define MAX_CACHE_NUM 5
 #define MIN_CACHE_NUM 3
@@ -14,7 +15,7 @@ typedef struct Value
 
 typedef struct Node
 {
-    Node *parent_ptr;
+    struct Node *parent_ptr;
     // leaf==true means leaf node,otherwise it is internal node
     bool leaf;
     int child_num; 
@@ -24,13 +25,13 @@ typedef struct Node
     index_t keys[MAX_CACHE_NUM];
 
     // leaf node
-    Node *pre_node;
-    Node *next_node;
+    struct Node *pre_node;
+    struct Node *next_node;
     Value values[MAX_CACHE_NUM];
     off_t disk_pos;
 
     // internal node
-    Node *child_node_ptr[MAX_CACHE_NUM];
+    struct Node *child_node_ptr[MAX_CACHE_NUM];
        
 } Node;
 struct b_plus_tree
@@ -38,10 +39,12 @@ struct b_plus_tree
     Node *root_node;
     long long leaf_nums;
 };
-extern Node *SplitSplitLeafNode(Node *work_node);
-extern Node *SplitInternalNode(Node *work_node);
-void InsertLeafNode(Node *work_node,index_t key,Value value);
-void InsertInternalNode(Node *work_node,index_t key,Node *new_node);
-int SearchInsertPos(Node *work_node, index_t key);
-
+extern struct b_plus_tree BPTreeCreate();
+extern void SplitSplitLeafNode(Node *work_node);
+extern void SplitInternalNode(Node *work_node);
+extern void Insert(Node *work_node, index_t key, Value value);
+extern int SearchInsertPos(Node *work_node, index_t key);
+extern void InsertLeafNode(Node *work_node,index_t key,Value value);
+extern void InsertInternalNode(Node *work_node,index_t key,Node *new_node);
+extern Node *AllocNode(bool isLeaf);
 // extern Node *InsertNode(index_t key,Value value);
