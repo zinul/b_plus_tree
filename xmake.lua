@@ -1,6 +1,6 @@
 -- add rules: debug/release
 add_rules("mode.debug", "mode.release")
-
+add_cxflags("-g")
 -- define target
 target("b_plus_tree")
 
