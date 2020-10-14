@@ -6,92 +6,128 @@ Node *SplitLeafNode(Node *work_node)
     Node *new_leaf_node = AllocNode(true);
     Node *new_parent_node;
     index_t min_key_in_new_leaf;
-    for (int i = MIN_CACHE_NUM - 1; i >= 0; i--)
+    for (int i = 0; i < MIN_CACHE_NUM-1 ; i++)
     {
-        new_leaf_node->keys[i] = work_node->keys[i];
-        new_leaf_node->values[i] = work_node->values[i];
+        new_leaf_node->keys[i] = work_node->keys[work_node->child_num-i];
+        new_leaf_node->values[i] = work_node->values[work_node->child_num-i];
     }
-    min_key_in_new_leaf=new_leaf_node->keys[0];
+    min_key_in_new_leaf = new_leaf_node->keys[0];
     work_node->child_num = MIN_CACHE_NUM;
     new_leaf_node->child_num = MIN_CACHE_NUM - 1;
 
     new_leaf_node->next_node = work_node->next_node;
     work_node->next_node = new_leaf_node;
 
-    new_leaf_node->parent_ptr = new_parent_node;
-
     if (work_node->parent_ptr->child_num == 2 * MIN_CACHE_NUM - 1)
     {
-        new_parent_node = AllocNode(false);
+        // new_parent_node = AllocNode(false);
         SplitInternalNode(work_node->parent_ptr);
         // 记得把新节点所有子结点的父节点修改为新的
-    }
-    for(int i=work_node->parent_ptr->child_num-1;i>=0;i--)
-    {
-        if(min_key_in_new_leaf>work_node->parent_ptr->keys[i])
+        if(min_key_in_new_leaf>work_node->parent_ptr->keys[work_node->parent_ptr->child_num-1])
         {
-            work_node->parent_ptr->keys[i+1]=work_node->parent_ptr->keys[i];
+            new_leaf_node->parent_ptr=work_node->parent_ptr->next_node;
+        }
+        else
+        {
+            new_leaf_node->parent_ptr=work_node->parent_ptr;
+        }
+    }
+    InsertInternalNode(new_leaf_node->parent_ptr, min_key_in_new_leaf, new_leaf_node);
+
+    // for(int i=work_node->parent_ptr->child_num-1;i>=0;i--)
+    // {
+    //     if(min_key_in_new_leaf>work_node->parent_ptr->keys[i])
+    //     {
+    //         work_node->parent_ptr->keys[i+1]=work_node->parent_ptr->keys[i];
+    //         continue;
+    //     }
+    //     else
+    //     {
+    //         work_node->parent_ptr->keys[i+1]=min_key_in_new_leaf;
+    //         work_node->parent_ptr->child_node_ptr[i+1]=new_leaf_node;
+    //         work_node->parent_ptr->child_num++;
+    //         return new_leaf_node;
+    //     }
+
+    // }
+}
+
+void Insert(Node *work_node, index_t key, Value value)
+{
+    if (work_node->leaf)
+    {
+        if (work_node->child_num == 0)
+        {
+            work_node->keys[0] = key;
+            work_node->values[0] = value;
+            work_node->child_num++;
+            return;
+        }
+        if (work_node->child_num == MIN_CACHE_NUM * 2 - 1)
+        {
+            SplitLeafNode(work_node);
+            if(key>work_node->keys[work_node->child_num-1])
+            {
+                work_node=work_node->next_node;
+            }
+        }
+        InsertLeafNode(work_node, key, value);
+    }
+    else
+    {
+        int i=SearchInsertPos(work_node,key);
+        Insert(work_node->child_node_ptr[i], key, value);
+    }
+        return;
+}
+int SearchInsertPos(Node *work_node, index_t key)
+{
+    for (int i = work_node->child_num - 1; i >= 0; i--)
+    {
+        if (key < work_node->keys[i])
+        {
             continue;
         }
         else
         {
-            work_node->parent_ptr->keys[i+1]=min_key_in_new_leaf;
-            work_node->parent_ptr->child_node_ptr[i+1]=new_leaf_node;
-            work_node->parent_ptr->child_num++;
-            return new_leaf_node;
+            return i;
         }
-        
-    }
-
+    }    
 }
 
-void Insert(Node *root, index_t key, Value value)
+void InsertLeafNode(Node *work_node, index_t key, Value value)
 {
-    Node *work_inode = root;
-    if (work_inode->leaf)
+    for (int i = work_node->child_num - 1; i >= 0; i--)
     {
-        if (work_inode->child_num == 0)
+        if (key < work_node->keys[i])
         {
-            work_inode->keys[0] = key;
-            work_inode->values[0] = value;
-            work_inode->child_num++;
+            work_node->keys[i + 1] = work_node->keys[i];
+            continue;
+        }
+        else
+        {
+            work_node->keys[i + 1] = key;
+            work_node->values[i + 1] = value;
+            work_node->child_num++;
             return;
         }
-        if (work_inode->child_num == MIN_CACHE_NUM * 2 - 1)
-        {
-            work_inode = SplitleafNode(work_inode);
-        }
-        for (int i = work_inode->child_num - 1; i >= 0; i--)
-        {
-            if (key < work_inode->keys[i])
-            {
-                work_inode->keys[i + 1] = work_inode->keys[i];
-                continue;
-            }
-            else
-            {
-                work_inode->keys[i + 1] = key;
-                work_inode->values[i + 1] = value;
-                work_inode->child_num++;
-                return;
-            }
-        }
     }
-    else
+}
+void InsertInternalNode(Node *work_node, index_t key, Node *new_node)
+{
+    for (int i = work_node->child_num - 1; i >= 0; i--)
     {
-
-        for (int i = work_inode->child_num - 1; i >= 0; i--)
+        if (key < work_node->keys[i])
         {
-            if (key < work_inode->keys[i])
-            {
-                // work_inode->keys[i+1]=work_inode->keys[i];
-                continue;
-            }
-            else
-            {
-                Insert(work_inode->child_node_ptr[i], key, value);
-                return;
-            }
+            work_node->keys[i + 1] = work_node->keys[i];
+            continue;
+        }
+        else
+        {
+            work_node->keys[i + 1] = key;
+            work_node->parent_ptr->child_node_ptr[i + 1] = new_node;
+            work_node->child_num++;
+            return;
         }
     }
 }

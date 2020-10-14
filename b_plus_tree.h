@@ -17,6 +17,7 @@ typedef struct Node
     Node *parent_ptr;
     // leaf==true means leaf node,otherwise it is internal node
     bool leaf;
+    int child_num; 
     // I need to alloc a MIN_CACHE_NUM*sizeof(Key) bytes memory when a node is created
     // then when a new child join in, I will alloc the MAX_CACHE_NUM*sizeof(Key) bytes mem
     // Key *keys;
@@ -30,7 +31,7 @@ typedef struct Node
 
     // internal node
     Node *child_node_ptr[MAX_CACHE_NUM];
-    int child_num;    
+       
 } Node;
 struct b_plus_tree
 {
@@ -39,4 +40,8 @@ struct b_plus_tree
 };
 extern Node *SplitSplitLeafNode(Node *work_node);
 extern Node *SplitInternalNode(Node *work_node);
+void InsertLeafNode(Node *work_node,index_t key,Value value);
+void InsertInternalNode(Node *work_node,index_t key,Node *new_node);
+int SearchInsertPos(Node *work_node, index_t key);
+
 // extern Node *InsertNode(index_t key,Value value);
