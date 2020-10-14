@@ -1,4 +1,8 @@
 {
+    files = {
+        "build/.objs/main/linux/x86_64/release/main.c.o",
+        "build/linux/x86_64/release/libb_plus_tree.a"
+    },
     values = {
         "/usr/bin/g++",
         {
@@ -9,9 +13,5 @@
             "-L/usr/lib",
             "-lb_plus_tree"
         }
-    },
-    files = {
-        "build/.objs/main/linux/x86_64/release/main.c.o",
-        "build/linux/x86_64/release/libb_plus_tree.a"
     }
 }

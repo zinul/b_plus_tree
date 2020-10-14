@@ -6,7 +6,7 @@ struct b_plus_tree;
 Node *first_leaf_node;
 
 void PrintAllLeafNode();
-void PrintLastInternalNode();
+void PrintInternalNode(int levels);
 
 int main()
 {
@@ -22,7 +22,7 @@ int main()
     b_plus_tree = BPTreeCreate();
     b_plus_tree.leaf_nums = 0;
     printf("creat finish\n");
-    for (unsigned int i = 1; i < 2000000; ++i)
+    for (unsigned int i = 1; i < 4000000; ++i)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
         Value value;
@@ -30,9 +30,9 @@ int main()
         Insert(&b_plus_tree, ip, value);
         // printf("%s\t%u\n", domain_buf, ip);
         // printf("nums:%lld\n", b_plus_tree.leaf_nums);
-    //     PrintAllLeafNode();
-    // PrintLastInternalNode();
     }
+    //     PrintAllLeafNode();
+    PrintInternalNode(4);
     return 0;
 }
 void PrintAllLeafNode()
@@ -52,10 +52,14 @@ void PrintAllLeafNode()
     } while (work_node != NULL);
        
 }
-void PrintLastInternalNode()
+void PrintInternalNode(int levels)
 {
-    Node *work_node = first_leaf_node->parent_ptr;
+    Node *work_node = first_leaf_node;
     int i = 0;
+    for(i=0;i<levels;++i)
+    {
+        work_node=work_node->parent_ptr;
+    }
     if (work_node)
     {
         do

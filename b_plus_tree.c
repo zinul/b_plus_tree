@@ -143,11 +143,12 @@ int SearchInsertPos(Node *work_node, index_t key, bool is_search)
     {
         if (key < work_node->keys[i])
         {
-            if (key == 921969144)
-            {
-                printf("%u\n", work_node->keys[i]);
-            }
+
             continue;
+        }
+        else if(key==work_node->keys[i]&&work_node->leaf)
+        {
+            return -1*(i+1);
         }
         else
         {
@@ -175,6 +176,11 @@ void InsertLeafNode(Node *work_node, index_t key, Value value)
         return;
     }
     int insert_pos = SearchInsertPos(work_node, key, false);
+    if(insert_pos<0)
+    {
+        work_node->values[-1*(insert_pos+1)]=value;
+        return;
+    }
     for (int i = work_node->child_num - 1; i >= insert_pos; i--)
     {
         work_node->keys[i + 1] = work_node->keys[i];
@@ -200,6 +206,10 @@ void InsertInternalNode(Node *work_node, index_t key, Node *new_node)
         return;
     }
     int insert_pos = SearchInsertPos(work_node, key, false);
+    // if(insert_pos<0)
+    // {
+    //     insert_pos*=-1;
+    // }
     for (int i = work_node->child_num - 1; i >= insert_pos; i--)
     {
         work_node->keys[i + 1] = work_node->keys[i];
@@ -256,5 +266,6 @@ Node *AllocNode(bool isLeaf)
 {
     Node *new_node = malloc(sizeof(Node));
     new_node->leaf = isLeaf;
+    new_node->node_num=b_plus_tree.node_nums++;
     return new_node;
 }

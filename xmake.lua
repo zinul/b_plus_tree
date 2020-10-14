@@ -1,6 +1,7 @@
 -- add rules: debug/release
 add_rules("mode.debug", "mode.release")
 add_cxflags("-g")
+
 -- define target
 target("b_plus_tree")
 
@@ -12,16 +13,18 @@ target("b_plus_tree")
 
 -- define target
 target("test")
+    add_cflags("-g")
 
     -- set kind
     set_kind("binary")
 
     -- add files
     add_files("test.c")
-
+    add_files("b_plus_tree.c")
     -- add deps
     add_deps("b_plus_tree")
 target("main")
+    add_cflags("-g")
 
     -- set kind
     set_kind("binary")
