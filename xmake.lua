@@ -11,6 +11,16 @@ target("b_plus_tree")
     add_files("b_plus_tree.c")
 
 -- define target
+target("test")
+
+    -- set kind
+    set_kind("binary")
+
+    -- add files
+    add_files("test.c")
+
+    -- add deps
+    add_deps("b_plus_tree")
 target("main")
 
     -- set kind
