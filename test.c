@@ -42,7 +42,7 @@ int main()
         value = Search(ip);
         if(!value)
         {
-            // printf("no value for%u\n",ip);
+            printf("no value for%u\n",ip);
             // return 0;
             continue;
         }
