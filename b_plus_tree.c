@@ -32,7 +32,7 @@ void SplitInternalNode(Node *work_node)
         new_parent_node->child_num = 1;
 
         work_node->parent_ptr = new_parent_node;
-        // new_leaf_node->parent_ptr=new_parent_node;
+        // new_internal_node->parent_ptr=new_parent_node;
         b_plus_tree.root_node = new_parent_node;
         // first_leaf_node=work_node;
 
@@ -108,6 +108,11 @@ void Insert(struct b_plus_tree *b_plus_tree, index_t key, Value value)
     while (!work_node->leaf)
     {
         int i = SearchInsertPos(work_node, key, true);
+        if(i==LESS_THAN_MIN)
+        {
+            i=0;
+        }
+        // int i = SearchInsertPos(work_node, key, false);
         work_node = work_node->child_node_ptr[i];
         // b_plus_tree->leaf_nums++;
     }
@@ -130,25 +135,24 @@ int SearchInsertPos(Node *work_node, index_t key, bool is_search)
 {
     if (key > work_node->keys[work_node->child_num - 1])
     {
-        if (!is_search)
+        if (is_search)
         {
-            return work_node->child_num;
+            return work_node->child_num-1;
         }
         else
         {
-            return work_node->child_num - 1;
+            return work_node->child_num ;
         }
     }
     for (int i = work_node->child_num - 1; i >= 0; i--)
     {
         if (key < work_node->keys[i])
         {
-
             continue;
         }
-        else if(key==work_node->keys[i]&&work_node->leaf)
+        else if (key == work_node->keys[i] && work_node->leaf)
         {
-            return -1*(i+1);
+            return -1 * (i + 1);
         }
         else
         {
@@ -162,7 +166,14 @@ int SearchInsertPos(Node *work_node, index_t key, bool is_search)
             }
         }
     }
-    return 0;
+    if (is_search)
+    {
+        return LESS_THAN_MIN;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 void InsertLeafNode(Node *work_node, index_t key, Value value)
@@ -176,9 +187,10 @@ void InsertLeafNode(Node *work_node, index_t key, Value value)
         return;
     }
     int insert_pos = SearchInsertPos(work_node, key, false);
-    if(insert_pos<0)
+    if (insert_pos < 0)
     {
-        work_node->values[-1*(insert_pos+1)]=value;
+        work_node->values[-1 * (insert_pos + 1)] = value;
+        b_plus_tree.leaf_nums--;
         return;
     }
     for (int i = work_node->child_num - 1; i >= insert_pos; i--)
@@ -191,7 +203,7 @@ void InsertLeafNode(Node *work_node, index_t key, Value value)
     work_node->child_num++;
     if (insert_pos == 0 && work_node->parent_ptr)
     {
-        UpdateKey(work_node);
+        UpdateKey(work_node,work_node->keys[0]);
     }
     return;
 }
@@ -206,10 +218,10 @@ void InsertInternalNode(Node *work_node, index_t key, Node *new_node)
         return;
     }
     int insert_pos = SearchInsertPos(work_node, key, false);
-    // if(insert_pos<0)
-    // {
-    //     insert_pos*=-1;
-    // }
+    if (insert_pos == LESS_THAN_MIN)
+    {
+        insert_pos = 0;
+    }
     for (int i = work_node->child_num - 1; i >= insert_pos; i--)
     {
         work_node->keys[i + 1] = work_node->keys[i];
@@ -223,31 +235,52 @@ void InsertInternalNode(Node *work_node, index_t key, Node *new_node)
     work_node->child_num++;
     if (insert_pos == 0 && work_node->parent_ptr)
     {
-        UpdateKey(work_node);
+        UpdateKey(work_node,work_node->keys[0]);
     }
-    // for (int i = work_node->child_num - 1; i >= 0; i--)
-    // {
-    //     if (key < work_node->keys[i])
-    //     {
-    //         work_node->keys[i + 1] = work_node->keys[i];
-    //         continue;
-    //     }
-    //     else
-    //     {
-    //         work_node->keys[i + 1] = key;
-    //         work_node->parent_ptr->child_node_ptr[i + 1] = new_node;
-    //         work_node->child_num++;
-    //         return;
-    //     }
-    // }
 }
-void UpdateKey(Node *work_node)
+Value *Search(index_t key)
+{
+    Node *work_node = b_plus_tree.root_node;
+    while (!work_node->leaf)
+    {
+        int i = SearchInsertPos(work_node, key, true);
+        if (i == LESS_THAN_MIN)
+        {
+            // printf("internal out\n");
+            return NULL;
+        }
+        if (key >= work_node->keys[i])
+        {
+            // sleep(1);
+            work_node = work_node->child_node_ptr[i];
+        }
+    }
+    int i = SearchInsertPos(work_node, key, true);
+    if(i==LESS_THAN_MIN)
+    {
+        printf("leaf\n");
+        return NULL;
+    }
+    if (i < 0)
+    {
+        return &(work_node->values[-1 * (i + 1)]);
+    }
+    else
+    {
+        return NULL;
+    }
+}
+void UpdateKey(Node *work_node,index_t old_key)
 {
     for (int i = 0; i < work_node->parent_ptr->child_num; i++)
     {
-        if (work_node->parent_ptr->keys[i] == work_node->keys[1])
+        if (work_node->parent_ptr->keys[i] == old_key)
         {
             work_node->parent_ptr->keys[i] = work_node->keys[0];
+            if(i==0)
+            {
+                UpdateKey(work_node->parent_ptr,old_key);
+            }
             return;
         }
     }
@@ -266,6 +299,6 @@ Node *AllocNode(bool isLeaf)
 {
     Node *new_node = malloc(sizeof(Node));
     new_node->leaf = isLeaf;
-    new_node->node_num=b_plus_tree.node_nums++;
+    new_node->node_num = b_plus_tree.node_nums++;
     return new_node;
 }

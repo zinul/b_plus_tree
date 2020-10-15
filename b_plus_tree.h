@@ -4,7 +4,7 @@
 
 #define MAX_CACHE_NUM 5
 #define MIN_CACHE_NUM 3
-
+#define LESS_THAN_MIN 100
 struct b_plus_tree b_plus_tree;
 
 typedef unsigned int index_t;
@@ -48,6 +48,8 @@ extern void Insert(struct b_plus_tree *b_plus_tree, index_t key, Value value);
 extern int SearchInsertPos(Node *work_node, index_t key,bool is_search);
 extern void InsertLeafNode(Node *work_node,index_t key,Value value);
 extern void InsertInternalNode(Node *work_node,index_t key,Node *new_node);
-void UpdateKey(Node *work_node);
+Value *Search(index_t key);
+
+void UpdateKey(Node *work_node,index_t old_key);
 extern Node *AllocNode(bool isLeaf);
 // extern Node *InsertNode(index_t key,Value value);

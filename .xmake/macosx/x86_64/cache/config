@@ -1,6 +1,6 @@
 {
     mtimes = {
-        ["xmake.lua"] = 1602671346
+        ["xmake.lua"] = 1602692378
     },
     __version = "2.3.6",
     options = { }

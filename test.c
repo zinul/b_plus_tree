@@ -22,7 +22,7 @@ int main()
     b_plus_tree = BPTreeCreate();
     b_plus_tree.leaf_nums = 0;
     printf("creat finish\n");
-    for (unsigned int i = 1; i < 4000000; ++i)
+    for (unsigned int i = 1; i < 40000; ++i)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
         Value value;
@@ -31,8 +31,23 @@ int main()
         // printf("%s\t%u\n", domain_buf, ip);
         // printf("nums:%lld\n", b_plus_tree.leaf_nums);
     }
-    //     PrintAllLeafNode();
-    PrintInternalNode(4);
+    printf("insert finished%lld\n",b_plus_tree.leaf_nums);
+        // PrintAllLeafNode();
+    // PrintInternalNode(6);
+    fseek(fp, 0, SEEK_SET);
+    for (unsigned int i = 1; i < 40000; ++i)
+    {
+        fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
+        Value *value;
+        value = Search(ip);
+        if(!value)
+        {
+            // printf("no value for%u\n",ip);
+            // return 0;
+            continue;
+        }
+        // printf("%u:%s\n",ip,value->domain);
+    }
     return 0;
 }
 void PrintAllLeafNode()
@@ -41,7 +56,7 @@ void PrintAllLeafNode()
     int i = 0;
     do
     {
-        printf("node%d:\n", i++);
+        // printf("node%d:\n", i++);
         for (int i = 0; i < work_node->child_num; ++i)
         {
             printf("%u:%s\n", work_node->keys[i], work_node->values[i].domain);
@@ -50,21 +65,20 @@ void PrintAllLeafNode()
 
         work_node = work_node->next_node;
     } while (work_node != NULL);
-       
 }
 void PrintInternalNode(int levels)
 {
     Node *work_node = first_leaf_node;
     int i = 0;
-    for(i=0;i<levels;++i)
+    for (i = 0; i < levels; ++i)
     {
-        work_node=work_node->parent_ptr;
+        work_node = work_node->parent_ptr;
     }
     if (work_node)
     {
         do
         {
-            printf("node%d:\n", i++);
+            // printf("node%d:\n", i++);
             for (int i = 0; i < work_node->child_num; ++i)
             {
                 printf("%u:%p\n", work_node->keys[i], work_node->child_node_ptr[i]);

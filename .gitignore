@@ -5,3 +5,4 @@ b_plus_tree.code-workspace
 .deps
 linux
 macos
+test_log
