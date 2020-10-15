@@ -13,6 +13,7 @@ int main()
     FILE *fp;
     char domain_buf[16];
     char ip_buf[16];
+    Value *value;
     unsigned int ip;
     if ((fp = fopen("ip_log", "r")) == NULL)
     {
@@ -22,7 +23,7 @@ int main()
     b_plus_tree = BPTreeCreate();
     b_plus_tree.leaf_nums = 0;
     printf("creat finish\n");
-    for (unsigned int i = 1; i < 40000; ++i)
+    for (unsigned int i = 1; i < 4000000; ++i)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
         Value value;
@@ -31,23 +32,26 @@ int main()
         // printf("%s\t%u\n", domain_buf, ip);
         // printf("nums:%lld\n", b_plus_tree.leaf_nums);
     }
-    printf("insert finished%lld\n",b_plus_tree.leaf_nums);
-        // PrintAllLeafNode();
+    printf("insert finished%lld\n", b_plus_tree.leaf_nums);
+    // PrintAllLeafNode();
     // PrintInternalNode(6);
     fseek(fp, 0, SEEK_SET);
-    for (unsigned int i = 1; i < 40000; ++i)
+    int count = 0;
+    for (unsigned int i = 1; i < 4000000; ++i)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
-        Value *value;
         value = Search(ip);
-        if(!value)
+        if (!value)
         {
-            printf("no value for%u\n",ip);
+            // printf("aaaaaaa\n");
+            printf("no value for%u\n", ip);
             // return 0;
             continue;
         }
+        count++;
         // printf("%u:%s\n",ip,value->domain);
     }
+    printf("%d", count);
     return 0;
 }
 void PrintAllLeafNode()
