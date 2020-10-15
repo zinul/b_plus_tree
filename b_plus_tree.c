@@ -1,7 +1,79 @@
 #include <stdio.h>
+#include <memory.h>
 #include "b_plus_tree.h"
 extern struct b_plus_tree b_plus_tree;
 extern Node *first_leaf_node;
+
+int Delete(index_t key)
+{
+    Node *work_node = b_plus_tree.root_node;
+    int delete_pos;
+    while (!work_node->leaf)
+    {
+        delete_pos = SearchInsertPos(work_node, key, true);
+        if (delete_pos == LESS_THAN_MIN)
+        {
+            return -1;
+        }
+        work_node = work_node->child_node_ptr[i];
+    }
+    // delete_pos=SearchInsertPos(work_node,key,true);
+    // if(delete_pos>=0)
+    // {
+    //     return -1;
+    // }
+    if (work_node->leaf)
+    {
+    }
+}
+int DeleteLeafNode(Node *work_node, index_t key)
+{
+    int delete_pos = SearchInsertPos(work_node, key, true);
+    if (delete_pos >= 0)
+    {
+        return -1;
+    }
+    else
+    {
+        delete_pos = -1 * (delete_pos + 1);
+        index_t old_key=work_node->keys[0];
+        for (int i = delete_pos; i < work_node->child_num; i++)
+        {
+            work_node->keys[i] = work_node->keys[i + 1];
+            work_node->values[i]=work_node->values[i+1];
+        }
+        work_node->child_num--;
+        b_plus_tree.leaf_nums--;
+        if(delete_pos==0)
+        {
+            UpdateKey(work_node,old_key);
+        }
+        if (work_node->child_num < MIN_CACHE_NUM)
+        {
+            if(work_node->next_node->child_num>MIN_CACHE_NUM)
+            {
+                work_node->keys[work_node->child_num++]=work_node->next_node->keys[0];
+                for(int i=0;i<work_node->next_node->child_num-1;i++)
+                {
+                    work_node->next_node->keys[i]=work_node->next_node->keys[i+1];
+                    work_node->next_node->values[i]=work_node->next_node->values[i+1];
+                }
+                work_node->next_node->child_num--;
+                UpdateKey(work_node->next_node,work_node->keys[0]);
+            }
+            else
+            {
+                MergeLeafNode();
+            }
+            
+        }
+        
+    }
+}
+void MergeLeafNode(Node *work_node)
+{
+    
+}
 void SplitInternalNode(Node *work_node)
 {
     Node *new_internal_node = AllocNode(false);
@@ -19,7 +91,7 @@ void SplitInternalNode(Node *work_node)
 
     new_internal_node->next_node = work_node->next_node;
     work_node->next_node = new_internal_node;
-    
+
     if (work_node->parent_ptr == NULL)
     {
         new_parent_node = AllocNode(false);
@@ -104,9 +176,9 @@ void Insert(struct b_plus_tree *b_plus_tree, index_t key, Value value)
     while (!work_node->leaf)
     {
         int i = SearchInsertPos(work_node, key, true);
-        if(i==LESS_THAN_MIN)
+        if (i == LESS_THAN_MIN)
         {
-            i=0;
+            i = 0;
         }
         // int i = SearchInsertPos(work_node, key, false);
         work_node = work_node->child_node_ptr[i];
@@ -133,11 +205,11 @@ int SearchInsertPos(Node *work_node, index_t key, bool is_search)
     {
         if (is_search)
         {
-            return work_node->child_num-1;
+            return work_node->child_num - 1;
         }
         else
         {
-            return work_node->child_num ;
+            return work_node->child_num;
         }
     }
     for (int i = work_node->child_num - 1; i >= 0; i--)
@@ -199,7 +271,7 @@ void InsertLeafNode(Node *work_node, index_t key, Value value)
     work_node->child_num++;
     if (insert_pos == 0 && work_node->parent_ptr)
     {
-        UpdateKey(work_node,work_node->keys[1]);
+        UpdateKey(work_node, work_node->keys[1]);
     }
     return;
 }
@@ -231,7 +303,7 @@ void InsertInternalNode(Node *work_node, index_t key, Node *new_node)
     work_node->child_num++;
     if (insert_pos == 0 && work_node->parent_ptr)
     {
-        UpdateKey(work_node,work_node->keys[1]);
+        UpdateKey(work_node, work_node->keys[1]);
     }
 }
 Value *Search(index_t key)
@@ -250,7 +322,7 @@ Value *Search(index_t key)
         }
     }
     int i = SearchInsertPos(work_node, key, true);
-    if(i==LESS_THAN_MIN)
+    if (i == LESS_THAN_MIN)
     {
         return NULL;
     }
@@ -263,9 +335,9 @@ Value *Search(index_t key)
         return NULL;
     }
 }
-void UpdateKey(Node *work_node,index_t old_key)
+void UpdateKey(Node *work_node, index_t old_key)
 {
-    if(!work_node->parent_ptr)
+    if (!work_node->parent_ptr)
     {
         return;
     }
@@ -274,9 +346,9 @@ void UpdateKey(Node *work_node,index_t old_key)
         if (work_node->parent_ptr->keys[i] == old_key)
         {
             work_node->parent_ptr->keys[i] = work_node->keys[0];
-            if(i==0)
+            if (i == 0)
             {
-                UpdateKey(work_node->parent_ptr,old_key);
+                UpdateKey(work_node->parent_ptr, old_key);
             }
             return;
         }

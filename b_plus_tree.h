@@ -44,11 +44,16 @@ struct b_plus_tree
 extern struct b_plus_tree BPTreeCreate();
 extern void SplitSplitLeafNode(Node *work_node);
 extern void SplitInternalNode(Node *work_node);
+
 extern void Insert(struct b_plus_tree *b_plus_tree, index_t key, Value value);
-extern int SearchInsertPos(Node *work_node, index_t key,bool is_search);
 extern void InsertLeafNode(Node *work_node,index_t key,Value value);
 extern void InsertInternalNode(Node *work_node,index_t key,Node *new_node);
+
 Value *Search(index_t key);
+extern int SearchInsertPos(Node *work_node, index_t key,bool is_search);
+
+int DeleteLeafNode(Node *work_node,index_t key);
+int Delete(index_t key);
 
 void UpdateKey(Node *work_node,index_t old_key);
 extern Node *AllocNode(bool isLeaf);

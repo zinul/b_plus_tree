@@ -23,7 +23,7 @@ int main()
     b_plus_tree = BPTreeCreate();
     b_plus_tree.leaf_nums = 0;
     printf("creat finish\n");
-    for (unsigned int i = 1; i < 4000000; ++i)
+    for (unsigned int i = 1; i < 1000000; ++i)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
         Value value;
@@ -35,16 +35,16 @@ int main()
     printf("insert finished%lld\n", b_plus_tree.leaf_nums);
     // PrintAllLeafNode();
     // PrintInternalNode(6);
-    fseek(fp, 0, SEEK_SET);
+    // fseek(fp, 0, SEEK_SET);
     int count = 0;
-    for (unsigned int i = 1; i < 4000000; ++i)
+    for (unsigned int i = 1; i < 1000000; ++i)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
         value = Search(ip);
         if (!value)
         {
             // printf("aaaaaaa\n");
-            printf("no value for%u\n", ip);
+            // printf("no value for%u\n", ip);
             // return 0;
             continue;
         }
