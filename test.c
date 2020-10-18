@@ -23,7 +23,7 @@ int main()
     b_plus_tree = BPTreeCreate();
     b_plus_tree.leaf_nums = 0;
     printf("creat finish\n");
-    for (unsigned int i = 1; i < 1000000; ++i)
+    for (unsigned int i = 0; i < 10; ++i)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
         Value value;
@@ -33,25 +33,41 @@ int main()
         // printf("nums:%lld\n", b_plus_tree.leaf_nums);
     }
     printf("insert finished%lld\n", b_plus_tree.leaf_nums);
-    // PrintAllLeafNode();
-    // PrintInternalNode(6);
-    // fseek(fp, 0, SEEK_SET);
-    int count = 0;
-    for (unsigned int i = 1; i < 1000000; ++i)
+    PrintAllLeafNode();
+    fseek(fp,0,SEEK_SET);
+    for (unsigned int i = 0; i < 10; i++)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
-        value = Search(ip);
-        if (!value)
+        if(Delete(ip)==-1)
         {
-            // printf("aaaaaaa\n");
-            // printf("no value for%u\n", ip);
-            // return 0;
-            continue;
+            printf("there is no domain for ip:%u\n",ip);
         }
-        count++;
-        // printf("%u:%s\n",ip,value->domain);
+        else
+        {
+            printf("delete ip:%u\n",ip);
+        }
+        
+    PrintAllLeafNode();
     }
-    printf("%d", count);
+    
+    // PrintInternalNode(6);
+    // fseek(fp, 0, SEEK_SET);
+    // int count = 0;
+    // for (unsigned int i = 1; i < 1000000; ++i)
+    // {
+    //     fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
+    //     value = Search(ip);
+    //     if (!value)
+    //     {
+    //         // printf("aaaaaaa\n");
+    //         // printf("no value for%u\n", ip);
+    //         // return 0;
+    //         continue;
+    //     }
+    //     count++;
+    //     // printf("%u:%s\n",ip,value->domain);
+    // }
+    // printf("%d", count);
     return 0;
 }
 void PrintAllLeafNode()
@@ -60,15 +76,22 @@ void PrintAllLeafNode()
     int i = 0;
     do
     {
-        // printf("node%d:\n", i++);
+        printf("node%u:\n", work_node->node_num);
         for (int i = 0; i < work_node->child_num; ++i)
         {
             printf("%u:%s\n", work_node->keys[i], work_node->values[i].domain);
         }
         // sleep(1);
-
+        
         work_node = work_node->next_node;
     } while (work_node != NULL);
+    // printf("\n");
+    // do
+    // {
+    //     printf("node%u:\n", work_node->node_num);
+        
+    //     work_node = work_node->pre_node;
+    // } while (work_node != NULL);
 }
 void PrintInternalNode(int levels)
 {

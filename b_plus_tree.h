@@ -1,4 +1,4 @@
-#include <sys/types.h>
+// #include <sys/types.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -50,11 +50,14 @@ extern void InsertLeafNode(Node *work_node,index_t key,Value value);
 extern void InsertInternalNode(Node *work_node,index_t key,Node *new_node);
 
 Value *Search(index_t key);
-extern int SearchInsertPos(Node *work_node, index_t key,bool is_search);
+extern int SearchPos(Node *work_node, index_t key,bool is_search);
 
-int DeleteLeafNode(Node *work_node,index_t key);
-int Delete(index_t key);
-
-void UpdateKey(Node *work_node,index_t old_key);
+extern int DeleteLeafNode(Node *work_node,index_t key);
+extern int Delete(index_t key);
+extern int LendLeafNode(Node *work_node);
+extern int LendInternalNode(Node *work_node);
+extern void MergeLeafNode(Node *work_node);
+extern void MergeInternalNode(Node *work_node);
+extern void UpdateKey(Node *work_node,index_t old_key);
 extern Node *AllocNode(bool isLeaf);
 // extern Node *InsertNode(index_t key,Value value);
