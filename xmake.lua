@@ -20,7 +20,7 @@ target("test")
 
     -- add files
     add_files("test.c")
-    add_files("b_plus_tree.c")
+    -- add_files("b_plus_tree.c")
     -- add deps
     add_deps("b_plus_tree")
 target("main")

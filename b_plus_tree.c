@@ -227,7 +227,11 @@ void MergeLeafNode(Node *work_node)
         work_node->values[work_node->child_num+i]=merge_from->values[i];
     }
     work_node->next_node=merge_from->next_node;
-    merge_from->next_node->pre_node=work_node;
+    if(merge_from->next_node)
+    {
+
+        merge_from->next_node->pre_node=work_node;
+    }
     DeleteInternalNodeOneItem(merge_from->parent_ptr,merge_from->keys[0]);
     free(merge_from);
     
@@ -534,6 +538,7 @@ Node *AllocNode(bool isLeaf)
 {
     Node *new_node = malloc(sizeof(Node));
     new_node->leaf = isLeaf;
-    new_node->node_num = b_plus_tree.node_nums++;
+    b_plus_tree.node_nums++;
+    new_node->node_num = b_plus_tree.node_nums;
     return new_node;
 }

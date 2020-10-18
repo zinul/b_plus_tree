@@ -22,7 +22,7 @@ int main()
     }
     b_plus_tree = BPTreeCreate();
     b_plus_tree.leaf_nums = 0;
-    printf("creat finish\n");
+    printf("%lld\n",b_plus_tree.node_nums);
     for (unsigned int i = 0; i < 10; ++i)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
