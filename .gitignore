@@ -6,3 +6,4 @@ b_plus_tree.code-workspace
 linux
 macos
 test_log
+.xmake

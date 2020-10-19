@@ -22,8 +22,7 @@ int main()
     }
     b_plus_tree = BPTreeCreate();
     b_plus_tree.leaf_nums = 0;
-    printf("%lld\n",b_plus_tree.node_nums);
-    for (unsigned int i = 0; i < 10; ++i)
+    for (unsigned int i = 0; i < 30; ++i)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
         Value value;
@@ -31,13 +30,19 @@ int main()
         Insert(&b_plus_tree, ip, value);
         // printf("%s\t%u\n", domain_buf, ip);
         // printf("nums:%lld\n", b_plus_tree.leaf_nums);
+    // PrintAllLeafNode();
     }
+    // PrintInternalNode(1);
+    // printf("\n");
+    // PrintInternalNode(2);
+    // printf("\n");
+
     printf("insert finished%lld\n", b_plus_tree.leaf_nums);
-    PrintAllLeafNode();
     fseek(fp,0,SEEK_SET);
-    for (unsigned int i = 0; i < 10; i++)
+    for (unsigned int i = 0; i < 30; i++)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
+        printf("********************************%d\n",i);
         if(Delete(ip)==-1)
         {
             printf("there is no domain for ip:%u\n",ip);
@@ -46,10 +51,15 @@ int main()
         {
             printf("delete ip:%u\n",ip);
         }
-        
-    PrintAllLeafNode();
-    }
     
+    PrintAllLeafNode();
+    PrintInternalNode(1);
+    printf("\n");
+    // PrintInternalNode(2);
+    }
+    // PrintInternalNode(3);
+    // printf("%p",b_plus_tree.root_node);
+    // printf("%lld\n",b_plus_tree.root_node->node_num);
     // PrintInternalNode(6);
     // fseek(fp, 0, SEEK_SET);
     // int count = 0;

@@ -23,16 +23,16 @@ typedef struct Node
     // I need to alloc a MIN_CACHE_NUM*sizeof(Key) bytes memory when a node is created
     // then when a new child join in, I will alloc the MAX_CACHE_NUM*sizeof(Key) bytes mem
     // Key *keys;
-    index_t keys[MAX_CACHE_NUM];
+    index_t keys[MAX_CACHE_NUM+1];
 
     // leaf node
     struct Node *pre_node;
     struct Node *next_node;
-    Value values[MAX_CACHE_NUM];
+    Value values[MAX_CACHE_NUM+1];
     off_t disk_pos;
 
     // internal node
-    struct Node *child_node_ptr[MAX_CACHE_NUM];
+    struct Node *child_node_ptr[MAX_CACHE_NUM+1];
        
 } Node;
 struct b_plus_tree
@@ -51,13 +51,15 @@ extern void InsertInternalNode(Node *work_node,index_t key,Node *new_node);
 
 Value *Search(index_t key);
 extern int SearchPos(Node *work_node, index_t key,bool is_search);
-
+int DeleteInternalNodeOneItem(Node *work_node,index_t key);
+int DeleteLeafNodeOneItem(Node *work_node, index_t key);
 extern int DeleteLeafNode(Node *work_node,index_t key);
 extern int Delete(index_t key);
 extern int LendLeafNode(Node *work_node);
 extern int LendInternalNode(Node *work_node);
 extern void MergeLeafNode(Node *work_node);
 extern void MergeInternalNode(Node *work_node);
+extern void MergeParentNode(Node *work_node);
 extern void UpdateKey(Node *work_node,index_t old_key);
 extern Node *AllocNode(bool isLeaf);
 // extern Node *InsertNode(index_t key,Value value);
