@@ -156,7 +156,7 @@ int LendLeafNode(Node *work_node)
         }
         work_node->child_num++;
         lend_from->child_num--;
-        UpdateKey(lend_from, work_node->keys[work_node->child_num]);
+        UpdateKey(lend_from, work_node->keys[work_node->child_num-1]);
     }
     else if (work_node->pre_node && work_node->pre_node->child_num > MIN_CACHE_NUM)
     {
@@ -181,6 +181,10 @@ int LendLeafNode(Node *work_node)
 void MergeInternalNode(Node *work_node)
 {
     Node *merge_from;
+    if(work_node==b_plus_tree.root_node)
+    {
+        return;
+    }
     if (work_node->next_node)
     {
         merge_from = work_node->next_node;
@@ -200,6 +204,10 @@ void MergeInternalNode(Node *work_node)
             merge_from->next_node->pre_node = work_node;
         }
         work_node->parent_ptr=merge_from->parent_ptr;        
+        if(merge_from==b_plus_tree.root_node)
+        {
+            b_plus_tree.root_node=work_node;
+        }
         free(merge_from);
         return;
     }
@@ -439,10 +447,9 @@ int SearchPos(Node *work_node, index_t key, bool is_search)
     }
     if (is_search)
     {
-            printf("less than min000000000000000000000000000\n");
-            printf("%u\n",work_node->keys[0]);
-            printf("%d\n",work_node->child_num);
-
+            // printf("less than min000000000000000000000000000\n");
+            // printf("%u\n",work_node->keys[0]);
+            // printf("%d\n",work_node->child_num);
         return LESS_THAN_MIN;
     }
     else

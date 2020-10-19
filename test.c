@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#define AMOUNT_OF_DATA 4000000
 struct b_plus_tree;
 Node *first_leaf_node;
 
@@ -22,7 +23,7 @@ int main()
     }
     b_plus_tree = BPTreeCreate();
     b_plus_tree.leaf_nums = 0;
-    for (unsigned int i = 0; i < 30; ++i)
+    for (unsigned int i = 0; i < AMOUNT_OF_DATA; ++i)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
         Value value;
@@ -39,24 +40,24 @@ int main()
 
     printf("insert finished%lld\n", b_plus_tree.leaf_nums);
     fseek(fp,0,SEEK_SET);
-    for (unsigned int i = 0; i < 30; i++)
+    for (unsigned int i = 0; i < AMOUNT_OF_DATA; i++)
     {
         fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
-        printf("********************************%d\n",i);
+        // printf("********************************%d\n",i);
         if(Delete(ip)==-1)
         {
-            printf("there is no domain for ip:%u\n",ip);
+            // printf("there is no domain for ip:%u\n",ip);
         }
         else
         {
-            printf("delete ip:%u\n",ip);
+            // printf("delete ip:%u\n",ip);
         }
     
+    // PrintInternalNode(2);
+    }
     PrintAllLeafNode();
     PrintInternalNode(1);
     printf("\n");
-    // PrintInternalNode(2);
-    }
     // PrintInternalNode(3);
     // printf("%p",b_plus_tree.root_node);
     // printf("%lld\n",b_plus_tree.root_node->node_num);
