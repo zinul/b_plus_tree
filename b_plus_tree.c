@@ -1,8 +1,87 @@
 #include <stdio.h>
 #include <memory.h>
 #include "b_plus_tree.h"
+#define DATA_BEGIN 16
 extern struct b_plus_tree b_plus_tree;
 extern Node *first_leaf_node;
+int Get(char path[],struct b_plus_tree b_plus_tree)
+{
+    return 0;
+}
+int PutTreeHead(char path[],struct b_plus_tree b_plus_tree)
+{
+    FILE *fp;
+    int node_size=sizeof(DiskNode);
+    if ((fp = fopen(path, "w")) == NULL)
+    {
+        printf("open error\n");
+        return -1;
+    }
+    fwrite(&b_plus_tree.node_nums,sizeof(int),1,fp);
+    fwrite(&b_plus_tree.leaf_nums,sizeof(int),1,fp);
+    fwrite(&b_plus_tree.root_disk_pos,sizeof(int),1,fp);
+    fwrite(&node_size,sizeof(int),1,fp);
+
+    fclose(fp);
+    return 0;
+}
+DiskNode *CreateDiskNode(Node *mem_node)
+{
+    DiskNode *disk_node=malloc(sizeof(DiskNode));
+    memcpy(disk_node->keys,mem_node->keys,sizeof(disk_node->keys));
+    memcpy(disk_node->values,mem_node->values,sizeof(disk_node->values));
+
+    disk_node->leaf=mem_node->leaf;
+    disk_node->child_num=mem_node->child_num;
+    if(mem_node->next_node)
+        disk_node->next_node_num=mem_node->next_node->node_num;
+    disk_node->node_num=mem_node->node_num;
+    return disk_node;
+}
+int PutAllTree(char path[],struct b_plus_tree b_plus_tree)
+{
+    FILE *fp;
+    Node *work_node=b_plus_tree.root_node;
+    if ((fp = fopen(path, "w")) == NULL)
+    {
+        printf("open error\n");
+        return -1;
+    }
+    PutTreeHead(path,b_plus_tree);
+    // fseek(fp,16,SEEK_SET);
+    printf("putTreeHead\n");
+    while (!work_node->leaf)
+    {
+        Node *first_node=work_node;
+        while (work_node)
+        {
+            DiskNode *disk_node=CreateDiskNode(work_node);
+            // printf("%u ",work_node->node_num);
+            for(int i=0;i<work_node->child_num;i++)
+            {
+                disk_node->child_node_nums[i]=work_node->child_node_ptr[i]->node_num;
+            }
+            fseek(fp,DATA_BEGIN+(disk_node->node_num)*sizeof(DiskNode),SEEK_SET);
+            fwrite(disk_node,sizeof(DiskNode),1,fp);
+            
+            free(disk_node);
+            work_node=work_node->next_node;
+        }
+        work_node=first_node->child_node_ptr[0];
+    }
+    work_node=first_leaf_node;
+    while (work_node)
+    {
+        DiskNode *disk_node=CreateDiskNode(work_node);
+        fseek(fp,DATA_BEGIN+(disk_node->node_num)*sizeof(DiskNode),SEEK_SET);
+        fwrite(disk_node,sizeof(DiskNode),1,fp);
+
+        free(disk_node);
+        work_node=work_node->next_node;
+    }
+    fclose(fp);
+    // PrintAllLeafNode();
+}
 
 int Delete(index_t key)
 {
@@ -199,6 +278,7 @@ void MergeInternalNode(Node *work_node)
         if(merge_from==b_plus_tree.root_node)
         {
             b_plus_tree.root_node=work_node;
+            b_plus_tree.root_disk_pos=work_node->node_num;
         }
         free(merge_from);
         return;
@@ -261,7 +341,6 @@ void MergeLeafNode(Node *work_node)
 
     return;
 }
-
 void SplitInternalNode(Node *work_node)
 {
     Node *new_internal_node = AllocNode(false);
@@ -291,6 +370,7 @@ void SplitInternalNode(Node *work_node)
 
         work_node->parent_ptr = new_parent_node;
         b_plus_tree.root_node = new_parent_node;
+        b_plus_tree.root_disk_pos=new_parent_node->node_num;
     }
     InsertInternalNode(work_node->parent_ptr, min_key_in_new_node, new_internal_node);
     if (work_node->parent_ptr->child_num == 2 * MIN_CACHE_NUM)
@@ -298,7 +378,6 @@ void SplitInternalNode(Node *work_node)
         SplitInternalNode(work_node->parent_ptr);
     }
 }
-
 void SplitLeafNode(Node *work_node)
 {
     Node *new_leaf_node = AllocNode(true);
@@ -327,7 +406,7 @@ void SplitLeafNode(Node *work_node)
 
         work_node->parent_ptr = new_parent_node;
         b_plus_tree.root_node = new_parent_node;
-
+        b_plus_tree.root_disk_pos=new_parent_node->node_num;
         work_node->leaf = true;
     }
     InsertInternalNode(work_node->parent_ptr, min_key_in_new_node, new_leaf_node);
@@ -336,7 +415,6 @@ void SplitLeafNode(Node *work_node)
         SplitInternalNode(work_node->parent_ptr);
     }
 }
-
 void Insert(struct b_plus_tree *b_plus_tree, index_t key, Value value)
 {
     Node *work_node = b_plus_tree->root_node;
@@ -405,7 +483,6 @@ int SearchPos(Node *work_node, index_t key, bool is_search)
         return 0;
     }
 }
-
 void InsertLeafNode(Node *work_node, index_t key, Value value)
 {
     int i;

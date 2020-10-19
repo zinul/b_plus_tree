@@ -2,13 +2,14 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
-#define AMOUNT_OF_DATA 4000000
+#include <unistd.h>
+#define AMOUNT_OF_DATA 40
 struct b_plus_tree;
 Node *first_leaf_node;
 
 void PrintAllLeafNode();
 void PrintInternalNode(int levels);
-
+void PrintTheTree();
 int main()
 {
     FILE *fp;
@@ -16,6 +17,7 @@ int main()
     char ip_buf[16];
     Value *value;
     unsigned int ip;
+
     if ((fp = fopen("ip_log", "r")) == NULL)
     {
         printf("open error\n");
@@ -33,6 +35,12 @@ int main()
         // printf("nums:%lld\n", b_plus_tree.leaf_nums);
     // PrintAllLeafNode();
     }
+    // PrintTheTree();
+    PutAllTree("a.bpt",b_plus_tree);
+    printf("%d\n",sizeof(DiskNode));
+    printf("%lld %lld\n",b_plus_tree.node_nums,b_plus_tree.leaf_nums);
+    // printf("%d",sizeof(Node));
+    // pause();
     // PrintInternalNode(1);
     // printf("\n");
     // PrintInternalNode(2);
@@ -42,45 +50,72 @@ int main()
     // printf("%p",b_plus_tree.root_node);
     // printf("%lld\n",b_plus_tree.root_node->node_num);
     // PrintInternalNode(6);
-    fseek(fp, 0, SEEK_SET);
-    int count = 0;
-    for (unsigned int i = 0; i < AMOUNT_OF_DATA; ++i)
-    {
-        fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
-        value = Search(ip);
-        if (!value)
-        {
-            // printf("aaaaaaa\n");
-            // printf("no value for%u\n", ip);
-            // return 0;
-            continue;
-        }
-        count++;
-        // printf("%u:%s\n",ip,value->domain);
-    }
-    // printf("%d", count);
+    // fseek(fp, 0, SEEK_SET);
+    // int count = 0;
+    // for (unsigned int i = 0; i < AMOUNT_OF_DATA; ++i)
+    // {
+    //     fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
+    //     value = Search(ip);
+    //     if (!value)
+    //     {
+    //         // printf("aaaaaaa\n");
+    //         // printf("no value for%u\n", ip);
+    //         // return 0;
+    //         continue;
+    //     }
+    //     count++;
+    //     // printf("%u:%s\n",ip,value->domain);
+    // }
+    // // printf("%d", count);
 
-    printf("insert finished%lld\n", b_plus_tree.leaf_nums);
-    fseek(fp,0,SEEK_SET);
-    for (unsigned int i = 0; i < AMOUNT_OF_DATA; i++)
-    {
-        fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
-        // printf("********************************%d\n",i);
-        if(Delete(ip)==-1)
-        {
-            // printf("there is no domain for ip:%u\n",ip);
-        }
-        else
-        {
-            // printf("delete ip:%u\n",ip);
-        }
+    // printf("insert finished%lld\n", b_plus_tree.leaf_nums);
+    // fseek(fp,0,SEEK_SET);
+    // for (unsigned int i = 0; i < AMOUNT_OF_DATA; i++)
+    // {
+    //     fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
+    //     // printf("********************************%d\n",i);
+    //     if(Delete(ip)==-1)
+    //     {
+    //         // printf("there is no domain for ip:%u\n",ip);
+    //     }
+    //     else
+    //     {
+    //         // printf("delete ip:%u\n",ip);
+    //     }
     
-    // PrintInternalNode(2);
+    // // PrintInternalNode(2);
+    // }
+    // PrintAllLeafNode();
+    // PrintInternalNode(1);
+    // printf("\n");
+    return 0;
+}
+void PrintTheTree()
+{
+    Node *work_node=b_plus_tree.root_node;
+    Node *queue[b_plus_tree.node_nums];
+    int head=0;
+    int tail=0;
+    while (!work_node->leaf)
+    {
+        // for(int i=0;i<work_node->child_num;i++)
+        // {
+        //     queue[tail++]=work_node->child_node_ptr[i];
+        //     printf("%u ",work_node->keys[i]);
+        // }
+        // work_node=queue[head++];
+        // if(!work_node->next_node)
+        //     printf("\n");
+        Node *first_node=work_node;
+        while (work_node)
+        {
+            printf("%u ",work_node->node_num);
+            work_node=work_node->next_node;
+        }
+        printf("\n");
+        work_node=first_node->child_node_ptr[0];
     }
     PrintAllLeafNode();
-    PrintInternalNode(1);
-    printf("\n");
-    return 0;
 }
 void PrintAllLeafNode()
 {
