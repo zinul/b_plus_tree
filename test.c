@@ -35,11 +35,14 @@ int main()
         // printf("nums:%lld\n", b_plus_tree.leaf_nums);
     // PrintAllLeafNode();
     }
+    GetAllTree("a.bpt");
+    printf("%p\n",first_leaf_node);
     // PrintTheTree();
-    PutAllTree("a.bpt",b_plus_tree);
+    PrintAllLeafNode();
+    PutAllTree("a.bpt");
     printf("%d\n",sizeof(DiskNode));
     printf("%lld %lld\n",b_plus_tree.node_nums,b_plus_tree.leaf_nums);
-    // printf("%d",sizeof(Node));
+    printf("%d",sizeof(Node));
     // pause();
     // PrintInternalNode(1);
     // printf("\n");

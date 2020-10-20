@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#define DATA_BEGIN 16
 #define MAX_CACHE_NUM 5
 #define MIN_CACHE_NUM 3
 #define LESS_THAN_MIN 100
@@ -78,7 +79,10 @@ void MergeParentNode(Node *work_node);
 void UpdateKey(Node *work_node,index_t old_key);
 Node *AllocNode(bool isLeaf);
 
-int PutTreeHead(char path[],struct b_plus_tree b_plus_tree);
-int PutAllTree(char path[],struct b_plus_tree b_plus_tree);
-int Get(char path[],struct b_plus_tree b_plus_tree);
+void NumberTheTree();
+int GetAllTree(char path[] );
+int PutTreeHead(char path[]);
+int PutAllTree(char path[]);
+DiskNode *CreateDiskNode(Node *mem_node);
+Node *CreateMemNode(DiskNode *disk_node);
 // extern Node *InsertNode(index_t key,Value value);
