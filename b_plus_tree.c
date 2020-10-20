@@ -117,22 +117,27 @@ int GetAllTree(char path[])
     ReadDiskNode(parent_disk_node,0,fp);
     parent_mem_node = CreateMemNode(parent_disk_node);
     b_plus_tree.root_node = parent_mem_node;
+    printf("%d ",b_plus_tree.node_nums);
     while (!parent_mem_node->leaf)
     {
         first_mem_node = parent_mem_node;
         first_disk_node = parent_disk_node;
         while (parent_mem_node)
         {
+            printf("11111%d\n",parent_mem_node->child_num);
 
-            for (int i = 0; i < parent_disk_node->child_num; i++)
+            for (int i = 0; i < parent_mem_node->child_num; i++)
             {
                 ReadDiskNode(work_node,parent_disk_node->child_node_nums[i],fp);
                 mem_node = CreateMemNode(work_node);
                 parent_mem_node->child_node_ptr[i] = mem_node;
+                printf("%d:%p\n",i,parent_mem_node->child_node_ptr[i]);
                 mem_node->parent_ptr = parent_mem_node;
             }
+            printf("%d\n",parent_mem_node->child_num);
             for (int i = 0; i < parent_mem_node->child_num; i++)
             {
+                printf("%d:%p\n",i,parent_mem_node->child_node_ptr[i]);
                 parent_mem_node->child_node_ptr[i]->next_node = parent_mem_node->child_node_ptr[i + 1];
                 if (parent_mem_node->child_node_ptr[i + 1])
                     parent_mem_node->child_node_ptr[i + 1]->pre_node = parent_mem_node->child_node_ptr[i];
@@ -140,18 +145,28 @@ int GetAllTree(char path[])
             if(parent_mem_node->pre_node)
             {
                 parent_mem_node->child_node_ptr[0]->pre_node=parent_mem_node->pre_node->child_node_ptr[parent_mem_node->pre_node->child_num-1];
-                parent_mem_node->pre_node->child_node_ptr[parent_mem_node->pre_node->child_num-1]->next_node=parent_mem_node->child_node_ptr[0];
+            printf("00000000%p\n",parent_mem_node->pre_node->child_node_ptr[parent_mem_node->pre_node->child_num-3]);
+            printf("00000000%d\n",parent_mem_node->pre_node->node_num);
+
+                parent_mem_node->pre_node->child_node_ptr[parent_mem_node->pre_node->child_num-2]->next_node=parent_mem_node->child_node_ptr[0];
             }
             if (!parent_mem_node->next_node)
                 break;
+            parent_mem_node=first_mem_node;
             
             ReadDiskNode(parent_disk_node,parent_disk_node->next_node_num,fp);
             parent_mem_node=parent_mem_node->next_node;
-
+            printf("%p\n",parent_mem_node->next_node);
+            // printf("node %d:\n",parent_mem_node->pre_node->node_num);
+            // for(int i=0;i<parent_mem_node->pre_node->child_num;i++)
+            // {
+            //     printf("%u:%p\n",parent_mem_node->pre_node->keys[i],parent_mem_node->pre_node->child_node_ptr[i]);
+            // }
         }
         
         parent_mem_node = first_mem_node->child_node_ptr[0];
         ReadDiskNode(parent_disk_node,first_disk_node->child_node_nums[0],fp);
+        printf("************************\n");
     }
     first_leaf_node=first_mem_node->child_node_ptr[0];
 
@@ -171,7 +186,7 @@ int PutAllTree(char path[])
     }
     PutTreeHead(path);
     // fseek(fp,16,SEEK_SET);
-    NumberTheTree(b_plus_tree);
+    NumberTheTree();
     int count = 0;
     while (!work_node->leaf)
     {
@@ -188,7 +203,8 @@ int PutAllTree(char path[])
                 disk_node->next_node_num = work_node->next_node->node_num;
             else
                 disk_node->next_node_num = -1;
-
+            if(disk_node->node_num==3)
+                printf("dddddddd%d\n",disk_node->child_num);
             fseek(fp, DATA_BEGIN + (disk_node->node_num) * sizeof(DiskNode), SEEK_SET);
             fwrite(disk_node, sizeof(DiskNode), 1, fp);
 
