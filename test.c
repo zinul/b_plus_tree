@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#define AMOUNT_OF_DATA 40
+#define AMOUNT_OF_DATA 4000000
 struct b_plus_tree;
 Node *first_leaf_node;
 
@@ -35,14 +35,15 @@ int main()
         // printf("nums:%lld\n", b_plus_tree.leaf_nums);
     // PrintAllLeafNode();
     }
-    GetAllTree("a.bpt");
-    printf("%p\n",first_leaf_node);
-    // PrintTheTree();
-    PrintAllLeafNode();
     PutAllTree("a.bpt");
-    printf("%d\n",sizeof(DiskNode));
-    printf("%lld %lld\n",b_plus_tree.node_nums,b_plus_tree.leaf_nums);
-    printf("%d",sizeof(Node));
+    // PrintAllLeafNode();
+
+    GetAllTree("a.bpt");
+    // PrintTheTree();
+    // PrintAllLeafNode();
+    // printf("%d\n",sizeof(DiskNode));
+    // printf("%lld %lld\n",b_plus_tree.node_nums,b_plus_tree.leaf_nums);
+    // printf("%d",sizeof(Node));
     // pause();
     // PrintInternalNode(1);
     // printf("\n");

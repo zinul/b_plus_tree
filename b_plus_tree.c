@@ -92,10 +92,21 @@ Node *CreateMemNode(DiskNode *disk_node)
 
     return mem_node;
 }
+void ReadDiskNode(DiskNode *disk_node, int node_num,FILE *fp)
+{
+    fseek(fp, DATA_BEGIN + node_num * sizeof(DiskNode), SEEK_SET);
+    fread(disk_node, sizeof(DiskNode), 1, fp);
+    return ;
+}
 int GetAllTree(char path[])
 {
     FILE *fp;
     DiskNode *work_node = malloc(sizeof(DiskNode));
+    DiskNode *first_disk_node;
+    DiskNode *parent_disk_node = malloc(sizeof(DiskNode));
+    Node *parent_mem_node;
+    Node *first_mem_node;
+    Node *mem_node;
     if ((fp = fopen(path, "r")) == NULL)
     {
         printf("open error\n");
@@ -103,60 +114,50 @@ int GetAllTree(char path[])
     }
 
     GetTreeHead(path);
-    // fseek(fp,16,SEEK_SET);
-    fseek(fp, DATA_BEGIN, SEEK_SET);
-    fread(work_node, sizeof(DiskNode), 1, fp);
-
-    Node *mem_node = CreateMemNode(work_node);
-    b_plus_tree.root_node = mem_node;
-    while (!work_node->leaf)
+    ReadDiskNode(parent_disk_node,0,fp);
+    parent_mem_node = CreateMemNode(parent_disk_node);
+    b_plus_tree.root_node = parent_mem_node;
+    while (!parent_mem_node->leaf)
     {
-        printf("%d\n", work_node->next_node_num);
-        DiskNode *first_disk_node = work_node;
-        Node *first_mem_node = mem_node;
-        while (mem_node)
+        first_mem_node = parent_mem_node;
+        first_disk_node = parent_disk_node;
+        while (parent_mem_node)
         {
-            // printf("%p \n",work_node);
-            DiskNode temp_node;
-            fseek(fp, DATA_BEGIN + (sizeof(DiskNode) * mem_node->node_num), SEEK_SET);
-            // printf("pos:%d\n",(sizeof(DiskNode) * work_node->child_node_nums[i]));
 
-            fread(&temp_node, sizeof(DiskNode), 1, fp);
-            for (int i = 0; i < work_node->child_num; i++)
+            for (int i = 0; i < parent_disk_node->child_num; i++)
             {
-                mem_node->child_node_ptr[i] = CreateMemNode(&temp_node);
-                mem_node->child_node_ptr[i]->parent_ptr = mem_node;
+                ReadDiskNode(work_node,parent_disk_node->child_node_nums[i],fp);
+                mem_node = CreateMemNode(work_node);
+                parent_mem_node->child_node_ptr[i] = mem_node;
+                mem_node->parent_ptr = parent_mem_node;
             }
-            for (int i = 0; i < work_node->child_num; i++)
+            for (int i = 0; i < parent_mem_node->child_num; i++)
             {
-                mem_node->child_node_ptr[i]->next_node = mem_node->child_node_ptr[i + 1];
-                if (mem_node->child_node_ptr[i + 1])
-                    mem_node->child_node_ptr[i + 1]->pre_node = mem_node->child_node_ptr[i];
+                parent_mem_node->child_node_ptr[i]->next_node = parent_mem_node->child_node_ptr[i + 1];
+                if (parent_mem_node->child_node_ptr[i + 1])
+                    parent_mem_node->child_node_ptr[i + 1]->pre_node = parent_mem_node->child_node_ptr[i];
             }
-            if (!mem_node->next_node)
+            if(parent_mem_node->pre_node)
+            {
+                parent_mem_node->child_node_ptr[0]->pre_node=parent_mem_node->pre_node->child_node_ptr[parent_mem_node->pre_node->child_num-1];
+                parent_mem_node->pre_node->child_node_ptr[parent_mem_node->pre_node->child_num-1]->next_node=parent_mem_node->child_node_ptr[0];
+            }
+            if (!parent_mem_node->next_node)
                 break;
-            mem_node = mem_node->next_node;
-            fseek(fp, DATA_BEGIN + (sizeof(DiskNode) * mem_node->node_num), SEEK_SET);
-            printf("pos:%d\n", DATA_BEGIN + (sizeof(DiskNode) * mem_node->node_num));
-            memset(work_node, 0, sizeof(DiskNode));
-            fread(work_node, sizeof(work_node), 1, fp);
-        }
-        fseek(fp, DATA_BEGIN + (sizeof(DiskNode) * first_disk_node->child_node_nums[0]), SEEK_SET);
-        printf("pos:%d\n", DATA_BEGIN + sizeof(DiskNode) * first_disk_node->child_node_nums[0]);
+            
+            ReadDiskNode(parent_disk_node,parent_disk_node->next_node_num,fp);
+            parent_mem_node=parent_mem_node->next_node;
 
-        fread(work_node, sizeof(work_node), 1, fp);
-        mem_node = first_mem_node->child_node_ptr[0];
-        printf("%d ", work_node->child_node_nums[0]);
-        // work_node = first_disk_node->child_node_nums[0];
+        }
+        
+        parent_mem_node = first_mem_node->child_node_ptr[0];
+        ReadDiskNode(parent_disk_node,first_disk_node->child_node_nums[0],fp);
     }
-    // if(mem_node->leaf&&!mem_node->pre_node)
-    // {
-    // // printf("2222***********************");
-    //     first_leaf_node=mem_node;
-    // }
+    first_leaf_node=first_mem_node->child_node_ptr[0];
 
     fclose(fp);
     free(work_node);
+    free(parent_disk_node);
     // PrintAllLeafNode();
 }
 int PutAllTree(char path[])
@@ -171,7 +172,6 @@ int PutAllTree(char path[])
     PutTreeHead(path);
     // fseek(fp,16,SEEK_SET);
     NumberTheTree(b_plus_tree);
-    printf("putTreeHead\n");
     int count = 0;
     while (!work_node->leaf)
     {
@@ -179,11 +179,9 @@ int PutAllTree(char path[])
         while (work_node)
         {
             DiskNode *disk_node = CreateDiskNode(work_node);
-            printf("%u ", work_node->node_num);
             for (int i = 0; i < work_node->child_num; i++)
             {
                 disk_node->child_node_nums[i] = work_node->child_node_ptr[i]->node_num;
-                printf("child%d:%d ", i, disk_node->child_node_nums[i]);
             }
 
             if (work_node->next_node)
@@ -191,7 +189,6 @@ int PutAllTree(char path[])
             else
                 disk_node->next_node_num = -1;
 
-            printf("%d %d\n", DATA_BEGIN + (disk_node->node_num) * sizeof(DiskNode), disk_node->leaf);
             fseek(fp, DATA_BEGIN + (disk_node->node_num) * sizeof(DiskNode), SEEK_SET);
             fwrite(disk_node, sizeof(DiskNode), 1, fp);
 
@@ -206,7 +203,6 @@ int PutAllTree(char path[])
         DiskNode *disk_node = CreateDiskNode(work_node);
         fseek(fp, DATA_BEGIN + (disk_node->node_num) * sizeof(DiskNode), SEEK_SET);
         fwrite(disk_node, sizeof(DiskNode), 1, fp);
-        printf("%d %d\n", DATA_BEGIN + (disk_node->node_num) * sizeof(DiskNode), disk_node->leaf);
 
         if (work_node->next_node)
             disk_node->next_node_num = -1;
