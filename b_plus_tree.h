@@ -1,6 +1,7 @@
 #include <sys/types.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #define DATA_BEGIN 16
 #define MAX_CACHE_NUM 5
@@ -83,6 +84,7 @@ void NumberTheTree();
 int GetAllTree(char path[] );
 int PutTreeHead(char path[]);
 int PutAllTree(char path[]);
+void ReadDiskNode(DiskNode *disk_node, int node_num, FILE *fp);
 DiskNode *CreateDiskNode(Node *mem_node);
 Node *CreateMemNode(DiskNode *disk_node);
 // extern Node *InsertNode(index_t key,Value value);

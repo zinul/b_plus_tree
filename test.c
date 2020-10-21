@@ -3,11 +3,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#define AMOUNT_OF_DATA 100
+#define AMOUNT_OF_DATA 10000000
 struct b_plus_tree;
 Node *first_leaf_node;
 
 void PrintAllLeafNode();
+void d_PrintAllLeafNode();
 void PrintInternalNode(int levels);
 void PrintTheTree();
 int main()
@@ -23,28 +24,28 @@ int main()
         printf("open error\n");
         return -1;
     }
-    b_plus_tree = BPTreeCreate();
-    b_plus_tree.leaf_nums = 0;
-    for (unsigned int i = 0; i < AMOUNT_OF_DATA; ++i)
-    {
-        fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
-        Value value;
-        strcpy(value.domain, domain_buf);
-        Insert(&b_plus_tree, ip, value);
-        // printf("%s\t%u\n", domain_buf, ip);
-        // printf("nums:%lld\n", b_plus_tree.leaf_nums);
+    // b_plus_tree = BPTreeCreate();
+    // b_plus_tree.leaf_nums = 0;
+    // for (unsigned int i = 0; i < AMOUNT_OF_DATA; ++i)
+    // {
+    //     fscanf(fp, "%s%s%u", ip_buf, domain_buf, &ip);
+    //     Value value;
+    //     strcpy(value.domain, domain_buf);
+    //     Insert(&b_plus_tree, ip, value);
+    //     // printf("%s\t%u\n", domain_buf, ip);
+    //     // printf("nums:%lld\n", b_plus_tree.leaf_nums);
+    // // PrintAllLeafNode();
+    // }
+    // PutAllTree("a.bpt");
     // PrintAllLeafNode();
-    }
-    PutAllTree("a.bpt");
-    // PrintAllLeafNode();
-    PrintInternalNode(1);
-    sleep(1);
+    // sleep(1);
     // for(int i=0;i<10;i++)
     // printf("\n\n\n");
 
     GetAllTree("a.bpt");
-    // // PrintTheTree();
-    PrintAllLeafNode();
+    // PrintTheTree();
+    // PrintAllLeafNode();
+    // PrintInternalNode(1);
     // printf("%d\n",sizeof(DiskNode));
     // printf("%lld %lld\n",b_plus_tree.node_nums,b_plus_tree.leaf_nums);
     // printf("%d",sizeof(Node));
@@ -123,11 +124,19 @@ void PrintTheTree()
         printf("\n");
         work_node=first_node->child_node_ptr[0];
     }
-    PrintAllLeafNode();
+    work_node=first_leaf_node;
+    while (work_node)
+    {
+        printf("%d ",work_node->node_num);
+        work_node=work_node->next_node;
+    }
+    
 }
+
 void PrintAllLeafNode()
 {
     Node *work_node = first_leaf_node;
+    Node *last_node;
     int i = 0;
     do
     {
@@ -137,9 +146,13 @@ void PrintAllLeafNode()
             printf("%u:%s\n", work_node->keys[i], work_node->values[i].domain);
         }
         // sleep(1);
-        
+        if(work_node->next_node&&work_node->parent_ptr!=work_node->next_node->parent_ptr)printf("\n");
+        if(!work_node->next_node)
+            last_node=work_node;        
         work_node = work_node->next_node;
+
     } while (work_node != NULL);
+    // work_node=last_node;
     // printf("\n");
     // do
     // {
@@ -147,6 +160,29 @@ void PrintAllLeafNode()
         
     //     work_node = work_node->pre_node;
     // } while (work_node != NULL);
+}
+void d_PrintAllLeafNode()
+{
+    Node *work_node = first_leaf_node;
+    DiskNode *disk_node=malloc(sizeof(DiskNode));
+    Node *last_node;
+    int i = 0;
+    FILE *fp=fopen("a.bpt","r");
+    do
+    {
+        
+        ReadDiskNode(disk_node,work_node->node_num,fp);
+        printf("node%u:\n", disk_node->node_num);
+        for (int i = 0; i < disk_node->child_num; ++i)
+        {
+            printf("%u:%s\n", disk_node->keys[i], disk_node->values[i].domain);
+        }
+        // sleep(1);
+        if(work_node->next_node&&work_node->parent_ptr!=work_node->next_node->parent_ptr)printf("\n");
+    
+        work_node = work_node->next_node;
+
+    } while (work_node != NULL);
 }
 void PrintInternalNode(int levels)
 {
