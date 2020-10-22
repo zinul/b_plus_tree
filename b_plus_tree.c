@@ -4,6 +4,38 @@
 
 extern struct b_plus_tree b_plus_tree;
 extern Node *first_leaf_node;
+
+void SplitSplitLeafNode(Node *work_node);
+void SplitInternalNode(Node *work_node);
+
+void Insert(struct b_plus_tree *b_plus_tree, index_t key, Value value);
+void InsertLeafNode(Node *work_node,index_t key,Value value);
+void InsertInternalNode(Node *work_node,index_t key,Node *new_node);
+
+Value *Search(index_t key);
+int SearchPos(Node *work_node, index_t key,bool is_search);
+
+int DeleteInternalNodeOneItem(Node *work_node,index_t key);
+int DeleteLeafNodeOneItem(Node *work_node, index_t key);
+int DeleteLeafNode(Node *work_node,index_t key);
+int Delete(index_t key);
+int LendLeafNode(Node *work_node);
+int LendInternalNode(Node *work_node);
+void MergeLeafNode(Node *work_node);
+void MergeInternalNode(Node *work_node);
+void MergeParentNode(Node *work_node);
+void UpdateKey(Node *work_node,index_t old_key);
+Node *AllocNode(bool isLeaf);
+
+void NumberTheTree();
+int GetAllTree(char path[] );
+int PutTreeHead(char path[]);
+int PutAllTree(char path[]);
+void ReadDiskNode(DiskNode *disk_node, int node_num, FILE *fp);
+void WriteDiskNode(DiskNode *disk_node, int node_num, FILE *fp);
+DiskNode *CreateDiskNode(Node *mem_node);
+Node *CreateMemNode(DiskNode *disk_node);
+
 int GetTreeHead(char path[])
 {
     FILE *fp;
@@ -15,7 +47,6 @@ int GetTreeHead(char path[])
     }
     fread(&b_plus_tree.node_nums, sizeof(int), 1, fp);
     fread(&b_plus_tree.leaf_nums, sizeof(int), 1, fp);
-    fread(&b_plus_tree.root_disk_pos, sizeof(int), 1, fp);
     fread(&node_size, sizeof(int), 1, fp);
 
     fclose(fp);
@@ -32,7 +63,6 @@ int PutTreeHead(char path[])
     }
     fwrite(&b_plus_tree.node_nums, sizeof(int), 1, fp);
     fwrite(&b_plus_tree.leaf_nums, sizeof(int), 1, fp);
-    fwrite(&b_plus_tree.root_disk_pos, sizeof(int), 1, fp);
     fwrite(&node_size, sizeof(int), 1, fp);
     fclose(fp);
     return 0;
@@ -40,12 +70,11 @@ int PutTreeHead(char path[])
 DiskNode *CreateDiskNode(Node *mem_node)
 {
     DiskNode *disk_node = malloc(sizeof(DiskNode));
-    memset(disk_node,0,sizeof(DiskNode));
-    memcpy(disk_node->keys, mem_node->keys, mem_node->child_num*sizeof(index_t));
+    memset(disk_node, 0, sizeof(DiskNode));
+    memcpy(disk_node->keys, mem_node->keys, mem_node->child_num * sizeof(index_t));
     if (mem_node->leaf)
     {
-        memcpy(disk_node->values, mem_node->values, mem_node->child_num*sizeof(Value));   
-        
+        memcpy(disk_node->values, mem_node->values, mem_node->child_num * sizeof(Value));
     }
     disk_node->leaf = mem_node->leaf;
     disk_node->child_num = mem_node->child_num;
@@ -84,11 +113,11 @@ void NumberTheTree()
 Node *CreateMemNode(DiskNode *disk_node)
 {
     Node *mem_node = malloc(sizeof(Node));
-    memset(mem_node,0,sizeof(Node));
-    memcpy(mem_node->keys, disk_node->keys, disk_node->child_num*sizeof(index_t));
+    memset(mem_node, 0, sizeof(Node));
+    memcpy(mem_node->keys, disk_node->keys, disk_node->child_num * sizeof(index_t));
     if (disk_node->leaf)
     {
-        memcpy(mem_node->values, disk_node->values, disk_node->child_num*sizeof(Value));
+        memcpy(mem_node->values, disk_node->values, disk_node->child_num * sizeof(Value));
     }
     mem_node->leaf = disk_node->leaf;
     mem_node->child_num = disk_node->child_num;
@@ -100,6 +129,12 @@ void ReadDiskNode(DiskNode *disk_node, int node_num, FILE *fp)
 {
     fseek(fp, DATA_BEGIN + node_num * sizeof(DiskNode), SEEK_SET);
     fread(disk_node, sizeof(DiskNode), 1, fp);
+    return;
+}
+void WriteDiskNode(DiskNode *disk_node, int node_num, FILE *fp)
+{
+    fseek(fp, DATA_BEGIN + node_num * sizeof(DiskNode), SEEK_SET);
+    fwrite(disk_node, sizeof(DiskNode), 1, fp);
     return;
 }
 int GetAllTree(char path[])
@@ -122,7 +157,7 @@ int GetAllTree(char path[])
     ReadDiskNode(work_node, parent_disk_node->child_node_nums[0], fp);
     parent_mem_node = CreateMemNode(parent_disk_node);
     b_plus_tree.root_node = parent_mem_node;
-    parent_mem_node->pre_node=NULL;
+    parent_mem_node->pre_node = NULL;
     while (!parent_mem_node->leaf)
     {
         first_mem_node = parent_mem_node;
@@ -141,12 +176,12 @@ int GetAllTree(char path[])
                     parent_mem_node->child_node_ptr[i - 1]->next_node = mem_node;
                 }
             }
-            if(parent_mem_node->pre_node)
+            if (parent_mem_node->pre_node)
             {
                 parent_mem_node->child_node_ptr[0]->pre_node = parent_mem_node->pre_node->child_node_ptr[parent_mem_node->pre_node->child_num - 1];
                 parent_mem_node->pre_node->child_node_ptr[parent_mem_node->pre_node->child_num - 1]->next_node = parent_mem_node->child_node_ptr[0];
             }
-            if (parent_disk_node->next_node_num==-1)
+            if (parent_disk_node->next_node_num == -1)
                 break;
 
             ReadDiskNode(parent_disk_node, parent_disk_node->next_node_num, fp);
@@ -160,6 +195,7 @@ int GetAllTree(char path[])
     fclose(fp);
     free(work_node);
     free(parent_disk_node);
+    free(parent_mem_node);
 }
 int PutAllTree(char path[])
 {
@@ -188,8 +224,9 @@ int PutAllTree(char path[])
                 disk_node->next_node_num = work_node->next_node->node_num;
             else
                 disk_node->next_node_num = -1;
-            fseek(fp, DATA_BEGIN + (disk_node->node_num) * sizeof(DiskNode), SEEK_SET);
-            fwrite(disk_node, sizeof(DiskNode), 1, fp);
+            // fseek(fp, DATA_BEGIN + (disk_node->node_num) * sizeof(DiskNode), SEEK_SET);
+            // fwrite(disk_node, sizeof(DiskNode), 1, fp);
+            WriteDiskNode(disk_node, disk_node->node_num, fp);
             free(disk_node);
             work_node = work_node->next_node;
         }
@@ -204,16 +241,17 @@ int PutAllTree(char path[])
             disk_node->next_node_num = work_node->next_node->node_num;
         else
             disk_node->next_node_num = -1;
-        
-        fseek(fp, DATA_BEGIN + (disk_node->node_num) * sizeof(DiskNode), SEEK_SET);
-        fwrite(disk_node, sizeof(DiskNode), 1, fp);
+
+        // fseek(fp, DATA_BEGIN + (disk_node->node_num) * sizeof(DiskNode), SEEK_SET);
+        // fwrite(disk_node, sizeof(DiskNode), 1, fp);
+        WriteDiskNode(disk_node, disk_node->node_num, fp);
+
         free(disk_node);
 
         work_node = work_node->next_node;
     }
     fclose(fp);
 }
-
 int Delete(index_t key)
 {
     Node *work_node = b_plus_tree.root_node;
@@ -408,7 +446,7 @@ void MergeInternalNode(Node *work_node)
         if (merge_from == b_plus_tree.root_node)
         {
             b_plus_tree.root_node = work_node;
-            b_plus_tree.root_disk_pos = work_node->node_num;
+            // b_plus_tree.root_disk_pos = work_node->node_num;
         }
         free(merge_from);
         return;
@@ -448,7 +486,6 @@ void MergeLeafNode(Node *work_node)
     }
     else
     {
-
         return;
     }
     for (int i = 0; i < merge_from->child_num; i++)
@@ -500,7 +537,7 @@ void SplitInternalNode(Node *work_node)
 
         work_node->parent_ptr = new_parent_node;
         b_plus_tree.root_node = new_parent_node;
-        b_plus_tree.root_disk_pos = new_parent_node->node_num;
+        // b_plus_tree.root_disk_pos = new_parent_node->node_num;
     }
     InsertInternalNode(work_node->parent_ptr, min_key_in_new_node, new_internal_node);
     if (work_node->parent_ptr->child_num == 2 * MIN_CACHE_NUM)
@@ -536,7 +573,7 @@ void SplitLeafNode(Node *work_node)
 
         work_node->parent_ptr = new_parent_node;
         b_plus_tree.root_node = new_parent_node;
-        b_plus_tree.root_disk_pos = new_parent_node->node_num;
+        // b_plus_tree.root_disk_pos = new_parent_node->node_num;
         work_node->leaf = true;
     }
     InsertInternalNode(work_node->parent_ptr, min_key_in_new_node, new_leaf_node);

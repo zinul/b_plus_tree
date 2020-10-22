@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define DATA_BEGIN 16
-#define MAX_CACHE_NUM 5
-#define MIN_CACHE_NUM 3
+#define DATA_BEGIN 8
+#define MAX_CACHE_NUM 19
+#define MIN_CACHE_NUM 10
 #define LESS_THAN_MIN 100
 struct b_plus_tree b_plus_tree;
 
@@ -18,20 +18,17 @@ typedef struct Value
 typedef struct Node
 {
     struct Node *parent_ptr;
-    // leaf==true means leaf node,otherwise it is internal node
     bool leaf;
     int child_num; 
     int node_num;
-    // I need to alloc a MIN_CACHE_NUM*sizeof(Key) bytes memory when a node is created
-    // then when a new child join in, I will alloc the MAX_CACHE_NUM*sizeof(Key) bytes mem
-    // Key *keys;
+
     index_t keys[MAX_CACHE_NUM+1];
 
     struct Node *pre_node;
     struct Node *next_node;
+
     // leaf node
     Value values[MAX_CACHE_NUM+1];
-    // off_t disk_pos;
 
     // internal node
     struct Node *child_node_ptr[MAX_CACHE_NUM+1];
@@ -53,38 +50,15 @@ typedef struct DiskNode
 struct b_plus_tree
 {
     Node *root_node;
-    int root_disk_pos;
+    // int root_disk_pos;
     int leaf_nums;
     int node_nums;
 };
 extern struct b_plus_tree BPTreeCreate();
-void SplitSplitLeafNode(Node *work_node);
-void SplitInternalNode(Node *work_node);
 
 void Insert(struct b_plus_tree *b_plus_tree, index_t key, Value value);
-void InsertLeafNode(Node *work_node,index_t key,Value value);
-void InsertInternalNode(Node *work_node,index_t key,Node *new_node);
-
-Value *Search(index_t key);
-int SearchPos(Node *work_node, index_t key,bool is_search);
-
-int DeleteInternalNodeOneItem(Node *work_node,index_t key);
-int DeleteLeafNodeOneItem(Node *work_node, index_t key);
-int DeleteLeafNode(Node *work_node,index_t key);
 int Delete(index_t key);
-int LendLeafNode(Node *work_node);
-int LendInternalNode(Node *work_node);
-void MergeLeafNode(Node *work_node);
-void MergeInternalNode(Node *work_node);
-void MergeParentNode(Node *work_node);
-void UpdateKey(Node *work_node,index_t old_key);
-Node *AllocNode(bool isLeaf);
-
-void NumberTheTree();
+Value *Search(index_t key);
 int GetAllTree(char path[] );
-int PutTreeHead(char path[]);
 int PutAllTree(char path[]);
-void ReadDiskNode(DiskNode *disk_node, int node_num, FILE *fp);
-DiskNode *CreateDiskNode(Node *mem_node);
-Node *CreateMemNode(DiskNode *disk_node);
 // extern Node *InsertNode(index_t key,Value value);
